@@ -32,6 +32,9 @@ protected:
 	void LookUpRate(float Rate);
 	// ----------------------------------------------------------------------------------------
 
+	//Called when the fireButton is Pressed
+	void FireWeapon();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -56,6 +59,14 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	float BaseLookUpRate;
+
+	//Randomized gunshot cue
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	class USoundCue* FireSound;
+
+	//Flash spawned at barrel socket
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	class UParticleSystem* MuzzleFlash;
 
 public:
 
