@@ -96,10 +96,14 @@ void AMainCharacter::LookUpRate(float Rate)
 void AMainCharacter::FireWeapon()
 {
 	UE_LOG(LogTemp, Warning, TEXT("FireButtonPressed"));
+
+	//Playing sound effect
 	if (FireSound)
 	{
 		UGameplayStatics::PlaySound2D(this, FireSound);
 	}
+
+	//Playing Firing particles
 	const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
 	if (BarrelSocket)
 	{
@@ -109,6 +113,8 @@ void AMainCharacter::FireWeapon()
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, SocketTransform);
 		}
 	}
+
+	//Playing Firing animation
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && HipFireMontage)
 	{
