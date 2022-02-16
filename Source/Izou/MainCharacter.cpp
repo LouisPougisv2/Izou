@@ -10,6 +10,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Animation/AnimMontage.h"
+#include "DrawDebugHelpers.h"
 
 
 
@@ -112,6 +113,21 @@ void AMainCharacter::FireWeapon()
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, SocketTransform);
 		}
+
+		FHitResult FireHit;
+		const FVector Start{ SocketTransform.GetLocation() };
+		const FQuat Rotation{ SocketTransform.GetRotation() }; //SocketTransform stores the rotation information as a FQuat
+		const FVector RotationAxis{ Rotation.GetAxisY() }; //The same axis as in our Barrel Socket pointing outward
+		const FVector End{ Start + RotationAxis * 50'000.0f }; //The Value is hardcoded for now
+
+		//Take a FHitResult and stores information in that struct regarding the line trace, whether or not it was hit, the trace hit location,...
+		GetWorld()->LineTraceSingleByChannel(FireHit, Start, End, ECollisionChannel::ECC_Visibility);
+		if (FireHit.bBlockingHit)
+		{
+			DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 10.0f);
+			DrawDebugPoint(GetWorld(), FireHit.Location, 5.0f, FColor::Red, false, 10.0f);
+		}
+
 	}
 
 	//Playing Firing animation
