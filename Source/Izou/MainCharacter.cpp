@@ -120,12 +120,28 @@ void AMainCharacter::FireWeapon()
 		const FVector RotationAxis{ Rotation.GetAxisY() }; //The same axis as in our Barrel Socket pointing outward
 		const FVector End{ Start + RotationAxis * 50'000.0f }; //The Value is hardcoded for now
 
+		FVector BeamEndPoint{ End };
 		//Take a FHitResult and stores information in that struct regarding the line trace, whether or not it was hit, the trace hit location,...
 		GetWorld()->LineTraceSingleByChannel(FireHit, Start, End, ECollisionChannel::ECC_Visibility);
 		if (FireHit.bBlockingHit)
 		{
 			DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 10.0f);
 			DrawDebugPoint(GetWorld(), FireHit.Location, 5.0f, FColor::Red, false, 10.0f);
+			BeamEndPoint = FireHit.Location;
+			//Particles spawned upon bullet impact
+			if (ImpactParticles)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, FireHit.Location);
+			}
+		}
+		//Smoke trail for bullets
+		if (BeamParticles)
+		{
+			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamParticles, SocketTransform);
+			if (Beam)
+			{
+				Beam->SetVectorParameter(FName("Target"), BeamEndPoint);
+			}
 		}
 
 	}
