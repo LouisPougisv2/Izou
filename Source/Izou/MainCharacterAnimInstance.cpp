@@ -4,6 +4,7 @@
 #include "MainCharacterAnimInstance.h"
 #include "MainCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void UMainCharacterAnimInstance::NativeInitializeAnimation()
 {
@@ -33,6 +34,21 @@ void UMainCharacterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 			bIsAccelerating = true;
 		}
 		else { bIsAccelerating = false; }
+
+		//Movement Offset Yaw calculation for future animation blending
+		FRotator AimRotation = MainCharacter->GetBaseAimRotation();
+		FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(MainCharacter->GetVelocity());
+		MovementOffsetYaw = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation).Yaw;
+		
+
+		/*FString RotationMessage = FString::Printf(TEXT("Base Aim Rotation: %f"), AimRotation.Yaw);
+		FString MovementRotationMessage = FString::Printf(TEXT("Movement Rotation: %f"), MovementRotation.Yaw);
+		FString OffsetMessage = FString::Printf(TEXT("Offset Value: %f"), MovementOffsetYaw);
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(1, 0.0f, FColor::Purple, OffsetMessage);
+			//GEngine->AddOnScreenDebugMessage(2, 0.0f, FColor::White, RotationMessage);
+		}*/
 	}
 
 }
