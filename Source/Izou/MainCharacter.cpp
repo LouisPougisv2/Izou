@@ -149,12 +149,26 @@ void AMainCharacter::FireWeapon()
 			if (ScreenTraceHit.bBlockingHit) //was there a trace hit?
 			{
 				BeamEndPoint = ScreenTraceHit.Location; //BeamEnd Point is now tracehit location
-				if (ImpactParticles)
-				{
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, ScreenTraceHit.Location);
-				}
 			}
-			if (BeamParticles)
+
+			//Perform a second trace, this time from the gun barrel
+			FHitResult WeaponTraceHit;	
+			FVector WeaponTraceStart{ SocketTransform.GetLocation() };
+			FVector WeaponTraceEnd{ BeamEndPoint };
+			GetWorld()->LineTraceSingleByChannel(WeaponTraceHit, WeaponTraceStart, WeaponTraceEnd, ECollisionChannel::ECC_Visibility);
+
+			if (WeaponTraceHit.bBlockingHit) //object between barrel and BeamEndPoint?
+			{
+				BeamEndPoint = WeaponTraceHit.Location;
+			}
+
+			//Spawn impact particle after updtaing BeamEndPoint
+			if (ImpactParticles)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, BeamEndPoint);
+			}
+
+			if (BeamParticles) //Bullet trace particle
 			{
 				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamParticles, SocketTransform);
 					if (Beam)
