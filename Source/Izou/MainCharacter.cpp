@@ -23,18 +23,14 @@ AMainCharacter::AMainCharacter()
 	//Create a Camera boom(pull in toward character if there's a collision
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetRootComponent());
-	CameraBoom->TargetArmLength = 300.0f;
+	CameraBoom->TargetArmLength = 180.0f;
 	CameraBoom->bUsePawnControlRotation = true; //Whenever our controller moves, the Camera will use this rotation
-	CameraBoom->SocketOffset = FVector(0.0f, 50.0f, 50.0f);
+	CameraBoom->SocketOffset = FVector(0.0f, 50.0f, 70.0f);
 
 	//Create a Camera
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false; // We don;t want the camera to rotate relative to the arm
-
-
-	BaseTurnRate = 45.0f;
-	BaseLookUpRate = 45.0f;
 	
 	// Don't rotate when the controller rotates. Let the controller only affect the camera.
 	bUseControllerRotationPitch = false;
@@ -47,6 +43,14 @@ AMainCharacter::AMainCharacter()
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
+
+	BaseTurnRate = 45.0f;
+	BaseLookUpRate = 45.0f;
+	bIsAiming = false;
+	CameraDefaultFieldOfView = 0.0f; //Set in BeginPlay
+	CameraZoomedFieldOFView = 35.0f;
+	CameraCurrentFOV = 0.0f;
+	ZoomInterpSpeed = 20.0f;
 }
 
 // Called when the game starts or when spawned
@@ -54,6 +58,11 @@ void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (Camera)
+	{
+		CameraDefaultFieldOfView = GetCamera()->FieldOfView;
+		CameraCurrentFOV = CameraDefaultFieldOfView;
+	}
 }
 
 void AMainCharacter::MoveForward(float Value)
@@ -97,8 +106,6 @@ void AMainCharacter::LookUpRate(float Rate)
 
 void AMainCharacter::FireWeapon()
 {
-	UE_LOG(LogTemp, Warning, TEXT("FireButtonPressed"));
-
 	//Playing sound effect
 	if (FireSound)
 	{
@@ -199,10 +206,36 @@ bool AMainCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVe
 	return false;
 }
 
+void AMainCharacter::AimingButtonPressed()
+{
+	bIsAiming = true;
+}
+
+void AMainCharacter::AimingButtonReleased()
+{
+	bIsAiming = false;
+}
+
+void AMainCharacter::ZoomInterpolation(float DeltaTime)
+{
+	//Set current camera field of view
+	if (bIsAiming)
+	{
+		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraZoomedFieldOFView, DeltaTime, ZoomInterpSpeed);
+	}
+	else
+	{
+		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraDefaultFieldOfView, DeltaTime, ZoomInterpSpeed);
+	}
+	Camera->SetFieldOfView(CameraCurrentFOV);
+}
+
 // Called every frame
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	ZoomInterpolation(DeltaTime);
 
 }
 
@@ -215,6 +248,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", EInputEvent::IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("FireButton", EInputEvent::IE_Pressed, this, &AMainCharacter::FireWeapon);
+	PlayerInputComponent->BindAction("AimingButton", EInputEvent::IE_Pressed, this, &AMainCharacter::AimingButtonPressed);
+	PlayerInputComponent->BindAction("AimingButton", EInputEvent::IE_Released, this, &AMainCharacter::AimingButtonReleased);
 
 	//Axis Mapping
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMainCharacter::MoveForward);

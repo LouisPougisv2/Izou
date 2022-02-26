@@ -37,6 +37,13 @@ protected:
 
 	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation);
 
+	//Set bIsAiming to true or false when button presed/released
+	void AimingButtonPressed();
+	void AimingButtonReleased();
+
+	//Interpolate to smoothly zoom 
+	void ZoomInterpolation(float DeltaTime);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -81,6 +88,23 @@ private:
 	//Smoke trail for bullets
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* BeamParticles;
+
+	//True when aiming
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	bool bIsAiming;
+
+	//Default camera field of view value
+	float CameraDefaultFieldOfView;
+
+	//Field of view value when zoomed in
+	float CameraZoomedFieldOFView;
+
+	//Current field of view this frame
+	float CameraCurrentFOV;
+
+	//Interp speed for zooming when aiming
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	float ZoomInterpSpeed;
 
 public:
 
