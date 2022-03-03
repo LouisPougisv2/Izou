@@ -32,6 +32,12 @@ protected:
 	void LookUpRate(float Rate);
 	// ----------------------------------------------------------------------------------------
 
+	/*Rotate controller based on mouse X or Y movement
+	@param Value : the input value from mouse movement
+	*/
+	void Turn(float Value);
+	void LookUp(float Value);
+
 	//Called when the fireButton is Pressed
 	void FireWeapon();
 
@@ -43,6 +49,9 @@ protected:
 
 	//Interpolate to smoothly zoom 
 	void ZoomInterpolation(float DeltaTime);
+
+	//Set the correct base turn/look up rates if aiming or not
+	void SetLookRates();
 
 public:	
 	// Called every frame
@@ -68,6 +77,41 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	float BaseLookUpRate;
+
+	//Turn rate while  not aiming
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	float HipTurnRate;
+
+	//Look up rate when not aiming
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	float HipLookUpRate;
+
+	//Turn rate while aiming
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	float AimingTurnRate;
+
+	//Look up rate when aiming
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	float AimingLookUpRate;
+
+	//------------------------------ Varaible for the Mouse input -----------------------------------------
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+		float MouseHipTurnRate;
+
+	//Look up rate when not aiming
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+		float MouseHipLookUpRate;
+
+	//Turn rate while aiming
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+		float MouseAimingTurnRate;
+
+	//Look up rate when aiming
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+		float MouseAimingLookUpRate;
+
+	//------------------------------------------------------------------------------------------------------
 
 	//Randomized gunshot cue
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))

@@ -43,10 +43,22 @@ AMainCharacter::AMainCharacter()
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
-
+	//Base rates for turning/looking up
 	BaseTurnRate = 45.0f;
 	BaseLookUpRate = 45.0f;
 	bIsAiming = false;
+	//Turn rates for aiming/not aiming (Controller gameplay inputs)
+	HipTurnRate = 80.0f;
+	HipLookUpRate= 80.0f;
+	AimingTurnRate = 30.0f;
+	AimingLookUpRate = 30.0f;
+	////Turn rates for aiming/not aiming (Mouse gameplay inputs)
+	MouseHipTurnRate = 1.0f;
+	MouseHipLookUpRate = -1.0f;
+	MouseAimingTurnRate = 0.4f;
+	MouseAimingLookUpRate = -0.4f;
+
+	//Camera field of view values
 	CameraDefaultFieldOfView = 0.0f; //Set in BeginPlay
 	CameraZoomedFieldOFView = 35.0f;
 	CameraCurrentFOV = 0.0f;
@@ -230,12 +242,34 @@ void AMainCharacter::ZoomInterpolation(float DeltaTime)
 	Camera->SetFieldOfView(CameraCurrentFOV);
 }
 
+void AMainCharacter::SetLookRates()
+{
+	APlayerController* PlayerController = CastChecked<APlayerController>(Controller);
+	if (bIsAiming)
+	{
+		PlayerController->InputYawScale = MouseAimingTurnRate;
+		PlayerController->InputPitchScale = MouseAimingLookUpRate;
+		BaseTurnRate = AimingTurnRate;
+		BaseLookUpRate = AimingLookUpRate;
+	}
+	else
+	{
+		PlayerController->InputYawScale = MouseHipTurnRate;
+		PlayerController->InputPitchScale = MouseHipLookUpRate;
+		BaseTurnRate = HipTurnRate;
+		BaseLookUpRate = HipLookUpRate;
+	}
+}
+
 // Called every frame
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 	ZoomInterpolation(DeltaTime);
+
+	//Change look sensitivity based on aiming
+	SetLookRates();
 
 }
 
