@@ -63,6 +63,13 @@ AMainCharacter::AMainCharacter()
 	CameraZoomedFieldOFView = 35.0f;
 	CameraCurrentFOV = 0.0f;
 	ZoomInterpSpeed = 20.0f;
+
+	//Crosshair spread factors
+	CrosshairSpreadMultiplier = 0.0f;
+	CrosshairAimFactor = 0.0f;
+	CrosshairInAirFactor = 0.0f;
+	CrosshairVelocityFactor = 0.0f;
+	CrosshairShootingFactor = 0.0f;
 }
 
 // Called when the game starts or when spawned
@@ -270,8 +277,33 @@ void AMainCharacter::CalculateCrosshairSpread(float DeltaTime)
 	FVector Velocity{ GetVelocity() };
 	Velocity.Z = 0.0f; //We only want the lateral component
 
+	//Calculation of the crosshair based on the velocity
 	CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
-	CrosshairSpreadMultiplier = 0.5f + CrosshairVelocityFactor;
+
+	//Calculation of the Crosshair if the player is jumping
+	if (GetCharacterMovement()->IsFalling()) //is in air
+	{
+		CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 2.25f);	//spread the crosshair slowly when falling
+	}
+	else //if on the ground
+	{
+		//Shrink the crosshair rapidly while back on the ground
+		CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.0f, DeltaTime, 20.0f);
+	}
+
+	if (bIsAiming)
+	{
+		//Shrink the crosshair very quickly to a small amount
+		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.5f, DeltaTime, 20.0f);
+	}
+	else
+	{
+		//Spread crosshair back to normal quickly
+		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.0f, DeltaTime, 20.0f);
+	}
+
+
+	CrosshairSpreadMultiplier = 0.5f + CrosshairVelocityFactor + CrosshairInAirFactor - CrosshairAimFactor;
 }
 
 // Called every frame
