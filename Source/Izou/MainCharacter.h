@@ -55,6 +55,8 @@ protected:
 
 
 	void CalculateCrosshairSpread(float DeltaTime);
+	void CalculateCrosshairInAir(float DeltaTime);
+	void CalculateCrosshairAimFactor(float DeltaTime);
 
 public:	
 	// Called every frame
