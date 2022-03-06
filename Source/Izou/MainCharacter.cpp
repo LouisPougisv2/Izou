@@ -261,6 +261,19 @@ void AMainCharacter::SetLookRates()
 	}
 }
 
+void AMainCharacter::CalculateCrosshairSpread(float DeltaTime)
+{
+	//Vector representing the range of the speed
+	FVector2D WalkSpeedRange{ 0.0f, 600.0f };
+	FVector2D VelocityMultiplierRange{ 0.0f, 1.0f };
+
+	FVector Velocity{ GetVelocity() };
+	Velocity.Z = 0.0f; //We only want the lateral component
+
+	CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
+	CrosshairSpreadMultiplier = 0.5f + CrosshairVelocityFactor;
+}
+
 // Called every frame
 void AMainCharacter::Tick(float DeltaTime)
 {
@@ -270,6 +283,9 @@ void AMainCharacter::Tick(float DeltaTime)
 
 	//Change look sensitivity based on aiming
 	SetLookRates();
+
+	//Calculate Crosshair Spread Multiplier
+	CalculateCrosshairSpread(DeltaTime);
 
 }
 
@@ -294,5 +310,10 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	
 
+}
+
+float AMainCharacter::GetCrosshairSpreadMultiplier() const
+{
+	return CrosshairSpreadMultiplier; 
 }
 
