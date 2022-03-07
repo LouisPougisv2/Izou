@@ -50,8 +50,8 @@ AMainCharacter::AMainCharacter()
 	//Turn rates for aiming/not aiming (Controller gameplay inputs)
 	HipTurnRate = 80.0f;
 	HipLookUpRate= 80.0f;
-	AimingTurnRate = 30.0f;
-	AimingLookUpRate = 30.0f;
+	AimingTurnRate = 35.0f;
+	AimingLookUpRate = 35.0f;
 	////Turn rates for aiming/not aiming (Mouse gameplay inputs)
 	MouseHipTurnRate = 1.0f;
 	MouseHipLookUpRate = -1.0f;
@@ -189,7 +189,6 @@ bool AMainCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVe
 
 	//Get Screen space location of crosshair
 	FVector2D CrosshairLocation{ ViewportSize.X / 2.0f, ViewportSize.Y / 2.0f };
-	CrosshairLocation.Y -= 50.0f;
 
 	FVector CrosshairWorldPosition;
 	FVector CrosshairWorldDirection;
