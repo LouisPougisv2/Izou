@@ -70,6 +70,10 @@ AMainCharacter::AMainCharacter()
 	CrosshairInAirFactor = 0.0f;
 	CrosshairVelocityFactor = 0.0f;
 	CrosshairShootingFactor = 0.0f;
+
+	//Bullet Fire Timer Variables
+	ShootTimeDuration = 0.05f;
+	bIsFiringBullet = false;
 }
 
 // Called when the game starts or when spawned
@@ -169,6 +173,9 @@ void AMainCharacter::FireWeapon()
 		AnimInstance->Montage_Play(HipFireMontage);
 		AnimInstance->Montage_JumpToSection(FName("StartFire"));
 	}
+
+	//Start bullet fire timer for crosshair
+	StartCrosshairBulletFire();
 }
 
 bool AMainCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation)
@@ -286,8 +293,11 @@ void AMainCharacter::CalculateCrosshairSpread(float DeltaTime)
 	//Calculation of the crosshair when the player is aiming
 	CalculateCrosshairAimFactor(DeltaTime);
 
+	//Calulation of the crosshair shen the player is shooting
+	CalculateCrosshairShootingFactor(DeltaTime);
 
-	CrosshairSpreadMultiplier = 0.5f + CrosshairVelocityFactor + CrosshairInAirFactor - CrosshairAimFactor;
+
+	CrosshairSpreadMultiplier = 0.5f + CrosshairVelocityFactor + CrosshairInAirFactor - CrosshairAimFactor + CrosshairShootingFactor;
 }
 
 void AMainCharacter::CalculateCrosshairInAir(float DeltaTime)
@@ -315,6 +325,30 @@ void AMainCharacter::CalculateCrosshairAimFactor(float DeltaTime)
 		//Spread crosshair back to normal quickly
 		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.0f, DeltaTime, 20.0f);
 	}
+}
+
+void AMainCharacter::CalculateCrosshairShootingFactor(float DeltaTime)
+{
+	//0.05 seconds after firing if true
+	if (bIsFiringBullet)
+	{
+		CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.3f, DeltaTime, 45.0f);
+	}
+	else
+	{
+		CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.0f, DeltaTime, 20.0f);
+	}
+}
+
+void AMainCharacter::StartCrosshairBulletFire()
+{
+	bIsFiringBullet = true;
+	GetWorldTimerManager().SetTimer(CrosshairShootTimer, this, &AMainCharacter::FinishCrosshairBulletFire, ShootTimeDuration);
+}
+
+void AMainCharacter::FinishCrosshairBulletFire()
+{
+	bIsFiringBullet = false;
 }
 
 // Called every frame
