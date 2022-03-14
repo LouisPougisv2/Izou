@@ -64,6 +64,14 @@ protected:
 	UFUNCTION() //Has to be a UFUNCTION as it is going to be a callback function for a TimerHandle
 	void FinishCrosshairBulletFire();
 
+
+	void FireButtonPressed();
+	void FireButtonReleased();
+	void StartFireTimer();
+
+	UFUNCTION()	//UFUNCTION because it's going to be a callback for our timer	
+	void AutoFireReset();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -185,6 +193,17 @@ private:
 	bool bIsFiringBullet;
 	FTimerHandle CrosshairShootTimer;
 
+	//Is Left mouse button or right console trigger pressed
+	bool bIsFireButtonPressed;
+
+	//True when we can fire, false when waiting for the timer
+	bool bShouldFire;
+
+	//Rate opf automatic rate fire
+	float AutomaticFireRate;
+
+	//Sets a timer between gunshots
+	FTimerHandle AutoFireTimer;
 public:
 
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

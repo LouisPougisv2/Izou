@@ -74,6 +74,11 @@ AMainCharacter::AMainCharacter()
 	//Bullet Fire Timer Variables
 	ShootTimeDuration = 0.05f;
 	bIsFiringBullet = false;
+
+	//Automatic Fire Variables
+	AutomaticFireRate = 0.15f;
+	bShouldFire = true;
+	bIsFireButtonPressed = false;
 }
 
 // Called when the game starts or when spawned
@@ -350,6 +355,36 @@ void AMainCharacter::FinishCrosshairBulletFire()
 	bIsFiringBullet = false;
 }
 
+void AMainCharacter::FireButtonPressed()
+{
+	bIsFireButtonPressed = true;
+	StartFireTimer(); //Start the fire after actually Firing the Weapon
+}
+
+void AMainCharacter::FireButtonReleased()
+{
+	bIsFireButtonPressed = false;
+}
+
+void AMainCharacter::StartFireTimer()
+{
+	if (bShouldFire)
+	{
+		FireWeapon();
+		bShouldFire = false;
+		GetWorldTimerManager().SetTimer(AutoFireTimer, this, &AMainCharacter::AutoFireReset, AutomaticFireRate);
+	}
+}
+
+void AMainCharacter::AutoFireReset()
+{
+	bShouldFire = true;
+	if (bIsFireButtonPressed)
+	{
+		StartFireTimer();
+	}
+}
+
 // Called every frame
 void AMainCharacter::Tick(float DeltaTime)
 {
@@ -373,7 +408,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	//ActionMapping
 	PlayerInputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", EInputEvent::IE_Released, this, &ACharacter::StopJumping);
-	PlayerInputComponent->BindAction("FireButton", EInputEvent::IE_Pressed, this, &AMainCharacter::FireWeapon);
+	PlayerInputComponent->BindAction("FireButton", EInputEvent::IE_Pressed, this, &AMainCharacter::FireButtonPressed);
+	PlayerInputComponent->BindAction("FireButton", EInputEvent::IE_Released, this, &AMainCharacter::FireButtonReleased);
 	PlayerInputComponent->BindAction("AimingButton", EInputEvent::IE_Pressed, this, &AMainCharacter::AimingButtonPressed);
 	PlayerInputComponent->BindAction("AimingButton", EInputEvent::IE_Released, this, &AMainCharacter::AimingButtonReleased);
 
