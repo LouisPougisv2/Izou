@@ -72,6 +72,9 @@ protected:
 	UFUNCTION()	//UFUNCTION because it's going to be a callback for our timer	
 	void AutoFireReset();
 
+	//Line trace for items under the crosshair
+	bool TraceUnderCrosshair(FHitResult& OutHitResult);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

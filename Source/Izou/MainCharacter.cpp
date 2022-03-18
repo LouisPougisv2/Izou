@@ -11,6 +11,9 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Animation/AnimMontage.h"
 #include "DrawDebugHelpers.h"
+#include "Item.h"
+#include "Components/WidgetComponent.h"
+
 
 
 
@@ -55,8 +58,8 @@ AMainCharacter::AMainCharacter()
 	////Turn rates for aiming/not aiming (Mouse gameplay inputs)
 	MouseHipTurnRate = 1.0f;
 	MouseHipLookUpRate = -1.0f;
-	MouseAimingTurnRate = 0.4f;
-	MouseAimingLookUpRate = -0.4f;
+	MouseAimingTurnRate = 0.8f;
+	MouseAimingLookUpRate = -0.9f;
 
 	//Camera field of view values
 	CameraDefaultFieldOfView = 0.0f; //Set in BeginPlay
@@ -385,6 +388,44 @@ void AMainCharacter::AutoFireReset()
 	}
 }
 
+bool AMainCharacter::TraceUnderCrosshair(FHitResult& OutHitResult)
+{
+	//Get current size of the viewport
+	FVector2D ViewportSize;
+	if (GEngine && GEngine->GameViewport) // GEngine holds the viewport
+	{
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
+
+	//Get Screen space location of crosshair
+	FVector2D CrosshairLocation{ ViewportSize.X / 2.0f, ViewportSize.Y / 2.0f };
+
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+
+	//Get position and direction of crosshair
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this, 0),
+		CrosshairLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection);
+
+	if (bScreenToWorld)
+	{
+		//Trace from crosshair location outward
+		const FVector Start{ CrosshairWorldPosition };
+		const FVector End{ Start + CrosshairWorldDirection * 50'000.0 };
+
+		GetWorld()->LineTraceSingleByChannel(OutHitResult, Start, End, ECollisionChannel::ECC_Visibility);
+
+		if (OutHitResult.bBlockingHit)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 // Called every frame
 void AMainCharacter::Tick(float DeltaTime)
 {
@@ -397,6 +438,18 @@ void AMainCharacter::Tick(float DeltaTime)
 
 	//Calculate Crosshair Spread Multiplier
 	CalculateCrosshairSpread(DeltaTime);
+
+	FHitResult ItemTraceResult;
+	TraceUnderCrosshair(ItemTraceResult);
+	if (ItemTraceResult.bBlockingHit)
+	{
+		AItem* HitItem = Cast<AItem>(ItemTraceResult.Actor);
+		if (HitItem && HitItem->GetPickupWidget())
+		{
+			//Show Item's Pickup Widget
+			HitItem->GetPickupWidget()->SetVisibility(true);
+		}
+	}
 
 }
 
