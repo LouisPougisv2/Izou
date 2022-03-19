@@ -82,6 +82,9 @@ AMainCharacter::AMainCharacter()
 	AutomaticFireRate = 0.15f;
 	bShouldFire = true;
 	bIsFireButtonPressed = false;
+
+	//Item trace variables
+	bShouldTraceForItems = false;
 }
 
 // Called when the game starts or when spawned
@@ -406,6 +409,44 @@ bool AMainCharacter::TraceUnderCrosshair(FHitResult& OutHitResult, FVector& OutH
 	return false;
 }
 
+void AMainCharacter::TraceForItems()
+{
+	if (bShouldTraceForItems)
+	{
+		FHitResult ItemTraceResult;
+		FVector HitLocation;
+		TraceUnderCrosshair(ItemTraceResult, HitLocation);
+		if (ItemTraceResult.bBlockingHit)
+		{
+			AItem* HitItem = Cast<AItem>(ItemTraceResult.Actor);
+			if (HitItem && HitItem->GetPickupWidget())
+			{
+				//Show Item's Pickup Widget
+				HitItem->GetPickupWidget()->SetVisibility(true);
+			}
+
+			//We hit an AItem last frame
+			if (TraceHitItemLastFrame)
+			{
+				if (HitItem != TraceHitItemLastFrame)
+				{
+					//We are hitting a different AItem this frame from the last one
+					//Or AItem is Null
+					TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+				}
+			}
+			//Store a reference to hit item for next frame
+			TraceHitItemLastFrame = HitItem;
+		}
+	}
+	else if (TraceHitItemLastFrame)
+	{
+		//No longer overlapping any items
+		//Item last frame shouldn't show widget
+		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+	}
+}
+
 // Called every frame
 void AMainCharacter::Tick(float DeltaTime)
 {
@@ -419,18 +460,8 @@ void AMainCharacter::Tick(float DeltaTime)
 	//Calculate Crosshair Spread Multiplier
 	CalculateCrosshairSpread(DeltaTime);
 
-	FHitResult ItemTraceResult;
-	FVector HitLocation;
-	TraceUnderCrosshair(ItemTraceResult, HitLocation);
-	if (ItemTraceResult.bBlockingHit)
-	{
-		AItem* HitItem = Cast<AItem>(ItemTraceResult.Actor);
-		if (HitItem && HitItem->GetPickupWidget())
-		{
-			//Show Item's Pickup Widget
-			HitItem->GetPickupWidget()->SetVisibility(true);
-		}
-	}
+	//Check Overlapped items, then trace for items
+	TraceForItems();
 
 }
 
@@ -461,5 +492,19 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 float AMainCharacter::GetCrosshairSpreadMultiplier() const
 {
 	return CrosshairSpreadMultiplier; 
+}
+
+void AMainCharacter::IncrementOverlappedItemCount(int8 Amount)
+{
+	if (OverlappedItemCount + Amount <= 0)
+	{
+		OverlappedItemCount = 0;
+		bShouldTraceForItems = false;
+	}
+	else
+	{
+		OverlappedItemCount += Amount;
+		bShouldTraceForItems = true;
+	}
 }
 
