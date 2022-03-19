@@ -30,6 +30,8 @@ AItem::AItem()
 	AreaSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AreaSphere"));
 	AreaSphere->SetupAttachment(GetRootComponent());
 
+	ItemName = FString("Default");
+
 
 }
 
