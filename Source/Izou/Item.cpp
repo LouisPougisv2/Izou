@@ -31,6 +31,7 @@ AItem::AItem()
 	AreaSphere->SetupAttachment(GetRootComponent());
 
 	ItemName = FString("Default");
+	ItemCount = 0;
 
 
 }
