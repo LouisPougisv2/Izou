@@ -13,6 +13,7 @@
 #include "DrawDebugHelpers.h"
 #include "Item.h"
 #include "Components/WidgetComponent.h"
+#include "Weapon.h"
 
 
 
@@ -97,6 +98,8 @@ void AMainCharacter::BeginPlay()
 		CameraDefaultFieldOfView = GetCamera()->FieldOfView;
 		CameraCurrentFOV = CameraDefaultFieldOfView;
 	}
+	//Spawn the default Weapon and attach it to the mesh
+	SpawnDefaultWeapon();
 }
 
 void AMainCharacter::MoveForward(float Value)
@@ -444,6 +447,24 @@ void AMainCharacter::TraceForItems()
 		//No longer overlapping any items
 		//Item last frame shouldn't show widget
 		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+	}
+}
+
+void AMainCharacter::SpawnDefaultWeapon()
+{
+	//check the TSubclassOf variable
+	if (DefaultWeaponClass)
+	{
+		AWeapon* DefaultWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass); // Spawn a weapon
+		
+		//get the hand socket
+		const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
+		if (HandSocket)
+		{
+			HandSocket->AttachActor(DefaultWeapon, GetMesh());	// attach the weapon to the hand socket
+		}
+		//Set Equipped Weapon to newly spawned one
+		EquippedWeapon = DefaultWeapon;
 	}
 }
 
