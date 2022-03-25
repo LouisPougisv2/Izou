@@ -14,6 +14,10 @@
 #include "Item.h"
 #include "Components/WidgetComponent.h"
 #include "Weapon.h"
+#include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
+
+
 
 
 
@@ -98,8 +102,9 @@ void AMainCharacter::BeginPlay()
 		CameraDefaultFieldOfView = GetCamera()->FieldOfView;
 		CameraCurrentFOV = CameraDefaultFieldOfView;
 	}
-	//Spawn the default Weapon and attach it to the mesh
-	SpawnDefaultWeapon();
+	//Spawn the default Weapon and equip it 
+	EquipWeapon(SpawnDefaultWeapon());
+
 }
 
 void AMainCharacter::MoveForward(float Value)
@@ -450,24 +455,36 @@ void AMainCharacter::TraceForItems()
 	}
 }
 
-void AMainCharacter::SpawnDefaultWeapon()
+AWeapon* AMainCharacter::SpawnDefaultWeapon()
 {
 	//check the TSubclassOf variable
 	if (DefaultWeaponClass)
 	{
-		AWeapon* DefaultWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass); // Spawn a weapon
-		
+		return GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass); // Spawn a weapon
+	}
+	return nullptr;
+}
+
+void AMainCharacter::EquipWeapon(AWeapon* WeaponToEquip)
+{
+	if (WeaponToEquip)
+	{
+		//Set AreaSphere to ignore all collision channels
+		WeaponToEquip->GetAreaSphere()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		//Set Collision Box to ignore all collision channels
+		WeaponToEquip->GetCollisionBox()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+
+
 		//get the hand socket
 		const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
 		if (HandSocket)
 		{
-			HandSocket->AttachActor(DefaultWeapon, GetMesh());	// attach the weapon to the hand socket
+			HandSocket->AttachActor(WeaponToEquip, GetMesh());	// attach the weapon to the hand socket
 		}
 		//Set Equipped Weapon to newly spawned one
-		EquippedWeapon = DefaultWeapon;
+		EquippedWeapon = WeaponToEquip;
 	}
 }
-
 // Called every frame
 void AMainCharacter::Tick(float DeltaTime)
 {
@@ -509,6 +526,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	
 
 }
+
+
 
 float AMainCharacter::GetCrosshairSpreadMultiplier() const
 {
